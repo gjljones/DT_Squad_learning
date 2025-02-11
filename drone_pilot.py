@@ -1,3 +1,5 @@
+import sys
+
 # This section creates the blank grid that will be worked with later
 rows = []
 number_of_columns = 10
@@ -22,7 +24,7 @@ def read_instructions(filename):
             start_coords = file.readline().strip().split(',')
             
             # Debug output for raw input
-            print("\nDebug Information:")
+            # print("\nDebug Information:")
             print(f"Raw coordinates from file: {start_coords}")
             
             # Convert to integers with validation
@@ -35,15 +37,16 @@ def read_instructions(filename):
                 start_y = int(start_coords[1])
                 
                 # Debug output for converted coordinates
-                print(f"Converted coordinates:")
-                print(f"start_x = {start_x} (type: {type(start_x)})")
-                print(f"start_y = {start_y} (type: {type(start_y)})")
+                # print(f"Converted coordinates:")
+                # print(f"start_x = {start_x} (type: {type(start_x)})")
+                # print(f"start_y = {start_y} (type: {type(start_y)})")
                 
                 # Validate coordinate ranges (assuming 10x10 grid)
-                if not (0 <= start_x <= 9 and 0 <= start_y <= 9):
-                    print("Warning: Coordinates out of range for 10x10 grid!")
+                if not (0 <= start_x <= number_of_columns-1 and 0 <= start_y <= number_of_rows-1):
+                    print(f"Warning: Coordinates out of range for a {number_of_columns}x{number_of_rows} grid!")
                     print(f"X coordinate {start_x} should be between 0 and 9")
                     print(f"Y coordinate {start_y} should be between 0 and 9")
+                    sys.exit(1)
                 
             except ValueError:
                 print("Error: Coordinates must be valid numbers")
@@ -51,15 +54,17 @@ def read_instructions(filename):
             
             # Read and validate directions
             directions = [direction.strip().lower() for direction in file.readlines()]
-            print("\nDirections read from file:")
-            print(directions)
+            # print("\nDirections read from file:")
+            # print(directions)
             
             # Validate directions
             valid_directions = {'north', 'south', 'east', 'west', 
-                              'northeast', 'northwest', 'southeast', 'southwest'}
+                              'northeast', 'northwest', 'southeast', 'southwest',
+                              'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'}
             invalid_directions = [d for d in directions if d not in valid_directions]
             if invalid_directions:
                 print(f"\nWarning: Invalid directions found: {invalid_directions}")
+                sys.exit(1)
             
             return (start_x, start_y), directions
             
@@ -111,7 +116,15 @@ def get_direction_offset(direction):
         'northeast': (1, -1),
         'northwest': (-1, -1),
         'southeast': (1, 1),
-        'southwest': (-1, 1)
+        'southwest': (-1, 1),
+        'n': (0, -1),
+        's': (0, 1),
+        'e': (1, 0),
+        'w': (-1, 0),
+        'ne': (1, -1),
+        'nw': (-1, -1),
+        'se': (1, 1),
+        'sw': (-1, 1)
     }
     return direction_mapping.get(direction.lower(), (0, 0))
 
@@ -126,7 +139,7 @@ def track_movement(rows, start_x, start_y, directions):
     # Mark starting position
     rows[current_y][current_x] = str(move_number)
     
-    print(f"\nStarting at position ({current_x}, {current_y})")
+    # print(f"\nStarting at position ({current_x}, {current_y})")
     
     # Process each direction
     for direction in directions:
@@ -142,9 +155,10 @@ def track_movement(rows, start_x, start_y, directions):
             move_number += 1
             current_x, current_y = new_x, new_y
             rows[current_y][current_x] = str(move_number)
-            print(f"Move {move_number}: {direction} to position ({current_x}, {current_y})")
+            # print(f"Move {move_number}: {direction} to position ({current_x}, {current_y})")
         else:
-            print(f"Warning: Move {move_number + 1} in direction {direction} would go out of bounds - skipping")
+            print(f"Warning: Move {move_number + 1} in direction {direction} would go out of bounds - check directions and start again")
+            return rows
     
     return rows
 
