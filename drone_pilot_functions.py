@@ -1,4 +1,6 @@
 import sys
+import tkinter as tk
+from tkinter import filedialog
 
 def read_instructions(filename,number_of_columns,number_of_rows,debug=False):
     """
@@ -87,6 +89,40 @@ def test_coordinate_reading():
 if __name__ == "__main__":
     test_coordinate_reading()"""
 
+def get_validated_integer(prompt, min_value=None, max_value=None):
+    """
+    Prompts user for an integer within the specified range.
+    Continues prompting until valid input is received.
+    
+    Args:
+        prompt (str): The prompt to display to the user
+        min_value (int, optional): Minimum acceptable value (inclusive)
+        max_value (int, optional): Maximum acceptable value (inclusive)
+    
+    Returns:
+        int: Validated integer within range
+    """
+    while True:
+        try:
+            # Get user input and convert to integer
+            user_input = input(prompt)
+            value = int(user_input)
+            
+            # Check if value is within range (if ranges were provided)
+            if min_value is not None and value < min_value:
+                print(f"Error: Input must be at least {min_value}.")
+                continue
+                
+            if max_value is not None and value > max_value:
+                print(f"Error: Input must be at most {max_value}.")
+                continue
+                
+            # If we get here, input is valid
+            return value
+            
+        except ValueError:
+            print("Error: Please enter a valid integer.")
+
 def mark_starting_position(grid, start_x, start_y):
     """
     Places a '0' at the starting position in the grid
@@ -162,9 +198,29 @@ def get_grid(number_of_columns, number_of_rows):
         rows.append(line)
     return rows
 
+def select_file():
+    """
+    Opens a file dialog to let the user select an instruction file
+    Returns the selected file path or None if canceled
+    """
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+    
+    file_path = filedialog.askopenfilename(
+        title="Select Instruction File",
+        filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+    )
+    
+    if file_path:
+        print(f"Selected file: {file_path}")
+        return file_path
+    else:
+        print("No file selected. Program terminating.")
+        sys.exit(1)
+
 if __name__ == "__main__":
-    number_of_columns = 10
-    number_of_rows = 12
+    number_of_columns = get_validated_integer("how many columns do you want in the grid?", 5, 20)
+    number_of_rows = get_validated_integer("how many rows do you want in the grid?", 5, 20)
     rows=get_grid(number_of_columns,number_of_rows)
 
     # add some error comparisons
@@ -178,7 +234,7 @@ if __name__ == "__main__":
         print("Test 2 passed")
     else:
         print("Test 2 failed")
-    # comparison 3 correct number of columns in every row
+    # comparison 3 correct notation in each columns of every row
     test_worked = True
     for row in rows:
         for column in row:
@@ -191,17 +247,26 @@ if __name__ == "__main__":
         print("Test 3 failed, reinstall universe and reboot from start")
             
 
-
-
-
-
     # you need to define the path to file of instructions here
-    file_path = "D:\\Development\\DT_Squad_learning\\instructions.txt"
-    result = read_instructions(file_path,number_of_columns, number_of_rows)
+#    file_path = "D:\\Development\\DT_Squad_learning\\instructions.txt"
+    file_path=select_file()
+    
+#    result = read_instructions(file_path,number_of_columns, number_of_rows)
     result = read_instructions(file_path,number_of_columns, number_of_rows, debug=True)
+
+    # check if there is an error
+    if result['rc'] == 0:
+        print("no errors continuing with processing")
+        route_points = result['route_data']
+    else:
+        print(f"error in instructions file; code = {result['rc']}; error message; {result['message']}")
+        sys.exit(1)
         
-    if result:
-        (start_x, start_y), directions = result
+
+    if route_points:
+        start_x= route_points['start_x']
+        start_y= route_points['start_y']
+        directions = route_points['directions']
             
         # Mark starting position
         rows = mark_starting_position(rows, start_x, start_y)

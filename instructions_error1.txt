@@ -1,0 +1,8 @@
+50, 5
+south
+west
+south
+east
+north
+east
+NE
