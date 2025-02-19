@@ -1,28 +1,31 @@
 from drone_pilot_functions import (
     read_instructions,
+    get_validated_integer,
     mark_starting_position,
     track_movement,
     get_direction_offset,
+    select_file,
+    get_grid
 )
 
 if __name__ == "__main__":
-    # you need to define the path to file of instructions here
-    file_path = "D:\\Development\\DT_Squad_learning\\instructions.txt"
 
     # This section creates the blank grid that will be worked with later
     rows = []
-    number_of_columns = 10
+    number_of_columns = 15
     number_of_rows = 10
-    for row_index in range(number_of_rows):
-        line=[]
-        for column_index in range(number_of_columns):
-            line.append('.')
-        rows.append(line)
+    rows = get_grid(number_of_columns, number_of_rows)
+
+    file_path = select_file()
 
     result = read_instructions(file_path,number_of_columns,number_of_rows)
-        
-    if result:
-        (start_x, start_y), directions = result
+
+    route_points = result['route_data']
+
+    if route_points:
+        start_x= route_points['start_x']
+        start_y= route_points['start_y']
+        directions = route_points['directions']
             
         # Mark starting position
         rows = mark_starting_position(rows, start_x, start_y)

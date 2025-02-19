@@ -204,12 +204,16 @@ def select_file():
     Returns the selected file path or None if canceled
     """
     root = tk.Tk()
+    root.attributes('-topmost', True)  # Make window stay on top
     root.withdraw()  # Hide the main window
     
     file_path = filedialog.askopenfilename(
         title="Select Instruction File",
-        filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+        filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+        parent=root # set the parent window
     )
+
+    root.destroy()
     
     if file_path:
         print(f"Selected file: {file_path}")
@@ -245,14 +249,13 @@ if __name__ == "__main__":
         print("Test 3 passed")
     else:
         print("Test 3 failed, reinstall universe and reboot from start")
-            
 
     # you need to define the path to file of instructions here
 #    file_path = "D:\\Development\\DT_Squad_learning\\instructions.txt"
     file_path=select_file()
     
-#    result = read_instructions(file_path,number_of_columns, number_of_rows)
-    result = read_instructions(file_path,number_of_columns, number_of_rows, debug=True)
+    result = read_instructions(file_path,number_of_columns, number_of_rows)
+#    result = read_instructions(file_path,number_of_columns, number_of_rows, debug=True)
 
     # check if there is an error
     if result['rc'] == 0:
@@ -271,6 +274,20 @@ if __name__ == "__main__":
         # Mark starting position
         rows = mark_starting_position(rows, start_x, start_y)
     #    print("\nGrid with starting position marked:")
+
+    # add test 4 to ensure that there is only a single 0 in the grid
+    test_worked = True
+    count_zeros = 0
+    for row in rows:
+        for column in row:
+            if column == '0':
+                count_zeros += 1
+    if not count_zeros==1:
+        test_worked=False
+    if test_worked:
+        print("Test 4 passed")
+    else:
+        print("Test 4 failed, incorrect number of starting positions in grid")     
 
     rows=track_movement(rows,start_x,start_y,directions)
 
